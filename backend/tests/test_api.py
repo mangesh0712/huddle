@@ -63,3 +63,18 @@ def test_kicked_identity_blocked_from_join(client):
 
 def test_spa_fallback_not_swallowing_api(client):
     assert client.get("/api/nope").status_code in (401, 404)
+
+
+def test_admin_key_alone_can_join(client):
+    r = join(client, invite_key="", admin_key="adm")
+    assert r.status_code == 200 and r.json()["is_admin"] is True
+
+
+def test_wrong_admin_key_without_invite_is_rejected(client):
+    assert join(client, invite_key="", admin_key="wrong").status_code == 403
+    assert join(client, invite_key="", admin_key=None).status_code == 403
+
+
+def test_only_admins_receive_the_invite_key(client):
+    assert join(client, invite_key="", admin_key="adm").json()["invite_key"] == "inv"
+    assert join(client).json().get("invite_key") is None

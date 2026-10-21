@@ -79,16 +79,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.post("/api/join")
     async def join(body: JoinBody):
-        if not check_keys(body.invite_key, s.invite_key):
+        is_admin = bool(body.admin_key) and check_keys(body.admin_key, s.admin_key)
+        if not (is_admin or check_keys(body.invite_key, s.invite_key)):
             raise HTTPException(403, "invalid_invite")
         ch = channel_or_404(body.channel)
         if ch.is_blocked(body.identity):
             raise HTTPException(403, "kicked")
-        is_admin = bool(body.admin_key) and check_keys(body.admin_key, s.admin_key)
         sess = {"identity": body.identity, "name": body.name.strip(), "is_admin": is_admin}
         token = make_session(s.session_secret, emoji=body.emoji, **sess)
         return {"session": token, "livekit_token": voice_token(sess, ch), "livekit_url": s.livekit_url,
-                "is_admin": is_admin, "channels": channel_list(), "app_name": s.app_name}
+                "is_admin": is_admin, "channels": channel_list(), "app_name": s.app_name,
+                "invite_key": s.invite_key if is_admin else None}
 
     @app.post("/api/voice-token")
     async def voice(body: VoiceBody, sess: dict = Depends(current)):

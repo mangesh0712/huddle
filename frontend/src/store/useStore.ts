@@ -125,7 +125,7 @@ export const useStore = create<AppState>()((set, get) => ({
       emoji: profile?.emoji ?? '🙂',
       selfIdentity: getIdentity(),
       channel: load('channel', ''),
-      authStatus: !inviteKey ? 'noinvite' : !profile?.name ? 'needname' : 'joining',
+      authStatus: !inviteKey && !load('adminKey', '') ? 'noinvite' : !profile?.name ? 'needname' : 'joining',
     })
     if (get().authStatus === 'joining') void get().join()
   },
@@ -155,13 +155,15 @@ export const useStore = create<AppState>()((set, get) => ({
       const channel = r.channels.find((c) => c.id === s.channel)?.id ?? r.channels[0].id
       set({ session: r.session, isAdmin: r.is_admin, channels: r.channels, appName: r.app_name, channel, authStatus: 'ready' })
       document.title = r.app_name
+      if (r.invite_key && !s.inviteKey) get().setInvite(r.invite_key)
       get().switchChannel(channel)
     } catch (e) {
       const err = e as ApiError
       if (err.code === 'kicked') set({ authStatus: 'kicked' })
       else if (err.code === 'invalid_invite') {
         save('inviteKey', '')
-        set({ inviteKey: '', authStatus: 'noinvite', authError: 'That invite link is not valid anymore.' })
+        save('adminKey', '')
+        set({ inviteKey: '', adminKey: '', authStatus: 'noinvite', authError: 'That invite link is not valid anymore.' })
       } else set({ authStatus: 'error', authError: 'Could not reach the server. Check your connection and try again.' })
     }
   },

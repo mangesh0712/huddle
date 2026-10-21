@@ -35,6 +35,7 @@ export interface JoinResult {
   is_admin: boolean
   channels: ChannelInfo[]
   app_name: string
+  invite_key: string | null
 }
 
 export const api = {
