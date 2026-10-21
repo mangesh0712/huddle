@@ -1,0 +1,65 @@
+@import '@fontsource-variable/inter';
+@import 'tailwindcss';
+
+@property --accent { syntax: '<color>'; inherits: true; initial-value: #7c5cff; }
+@property --accent-soft { syntax: '<color>'; inherits: true; initial-value: rgba(124, 92, 255, 0.16); }
+@property --on-accent { syntax: '<color>'; inherits: true; initial-value: #ffffff; }
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --color-base: #0e0f13;
+  --color-surface: #16181d;
+  --color-raised: #1c1f26;
+  --color-line: #23262d;
+  --color-ink: #eceef3;
+  --color-muted: #8b90a0;
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-on-accent: var(--on-accent);
+  --color-danger: #ff6b7a;
+}
+
+:root {
+  --accent: #7c5cff;
+  --accent-soft: rgba(124, 92, 255, 0.16);
+  --on-accent: #ffffff;
+  transition: --accent 600ms ease, --accent-soft 600ms ease, --on-accent 600ms ease;
+  color-scheme: dark;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+@layer base {
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; }
+  input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+}
+
+/* The room takes its colour from the song. */
+.room-glow {
+  background:
+    radial-gradient(900px 420px at 55% -8%, var(--accent-soft), transparent 70%),
+    radial-gradient(600px 400px at 100% 100%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 70%);
+}
+
+.range { -webkit-appearance: none; appearance: none; height: 4px; border-radius: 999px; background: var(--color-line); outline-offset: 6px; }
+.range::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 0; }
+.range::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 0; }
+
+.scroll-quiet { scrollbar-width: thin; scrollbar-color: var(--color-line) transparent; }
+
+.lyric-line { transition: opacity 400ms ease, transform 400ms ease, color 400ms ease, text-shadow 400ms ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  :root { transition: none; }
+}
