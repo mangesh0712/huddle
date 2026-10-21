@@ -18,6 +18,7 @@ export class RoomSocket {
   private pingTimer?: ReturnType<typeof setInterval>
   private retryTimer?: ReturnType<typeof setTimeout>
   private samples: { rtt: number; offset: number }[] = []
+  private pending: ClientMsg[] = []
 
   constructor(private channel: string, private getSession: () => string, private h: Handlers) {}
 
@@ -29,6 +30,7 @@ export class RoomSocket {
     ws.onopen = () => {
       this.attempts = 0
       this.h.status('open')
+      this.pending.splice(0).forEach((m) => this.send(m))
       this.ping()
       this.pingTimer = setInterval(() => this.ping(), 5000)
     }
@@ -55,8 +57,10 @@ export class RoomSocket {
     this.send({ type: 'clock.ping', t: Date.now() })
   }
 
+  /** Messages sent before the socket is open are held (up to 20) and flushed on connect. */
   send(m: ClientMsg) {
     if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(m))
+    else if (m.type !== 'clock.ping' && this.pending.length < 20) this.pending.push(m)
   }
 
   close() {
