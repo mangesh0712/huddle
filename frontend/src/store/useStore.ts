@@ -171,7 +171,8 @@ export const useStore = create<AppState>()((set, get) => ({
   switchChannel: (id) => {
     socket?.close()
     save('channel', id)
-    set({ ...emptyRoom(), selfIdentity: get().identity, channel: id, conn: 'connecting' })
+    const karaoke = get().channels.find((c) => c.id === id)?.karaoke
+    set({ ...emptyRoom(), selfIdentity: get().identity, channel: id, conn: 'connecting', ...(karaoke ? { rightOpen: true, rightTab: 'lyrics' as const } : {}) })
     socket = new RoomSocket(id, () => get().session, {
       message: (m) => {
         if (m.type === 'local') {

@@ -9,7 +9,7 @@ services:
       - key: APP_NAME
         value: Huddle
       - key: CHANNELS
-        value: Lounge,Chill,Gaming
+        value: Lounge,Chill,Gaming,Karaoke
       - key: SKIP_POLICY
         value: anyone
       - key: INVITE_KEY

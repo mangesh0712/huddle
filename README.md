@@ -40,6 +40,10 @@ Links to share: invite `https://<host>/join/<INVITE_KEY>`, admin `https://<host>
 4. Vote in the queue: higher votes play first. `!skip` skips.
 5. Lyrics toggle on one browser only; the nudge buttons shift timing. Speaking lowers the music (auto-duck).
 
+## Karaoke
+
+Channels listed in `KARAOKE_CHANNELS` (default `Karaoke`) never lower the music while people sing, and open the lyrics panel automatically. Add the name to `CHANNELS` too.
+
 ## Known limits
 
-Phones pause YouTube embeds when the screen locks. Free Render services sleep after 15 idle minutes and chat/queue state resets on restart. Use headphones to avoid echo.
+Music is audio-only in the UI: the YouTube embed runs off-screen at the lowest quality (YouTube cannot serve audio alone). Phones pause YouTube embeds when the screen locks. Free Render services sleep after 15 idle minutes and chat/queue state resets on restart. Use headphones to avoid echo.

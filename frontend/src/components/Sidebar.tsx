@@ -139,6 +139,7 @@ export function Sidebar() {
               >
                 <Icon name="hash" size={16} />
                 <span className="flex-1 truncate">{c.name}</span>
+                {c.karaoke && <Icon name="mic" size={14} className="opacity-70" />}
                 {c.count > 0 && <span className="text-xs text-muted tabular-nums">{c.count}</span>}
               </button>
             </li>

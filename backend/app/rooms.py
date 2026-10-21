@@ -82,8 +82,8 @@ class RateLimiter:
 
 
 class Channel:
-    def __init__(self, id: str, name: str):
-        self.id, self.name = id, name
+    def __init__(self, id: str, name: str, karaoke: bool = False):
+        self.id, self.name, self.karaoke = id, name, karaoke
         self.chat: deque = deque(maxlen=200)
         self.queue: list[QueueItem] = []
         self.player = PlayerState()

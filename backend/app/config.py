@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     invite_key: str = ""
     admin_key: str = ""
     session_secret: str = "dev-secret-change-me-dev-secret-change-me"
-    channels: str = "Lounge,Chill,Gaming"
+    channels: str = "Lounge,Chill,Gaming,Karaoke"
+    karaoke_channels: str = "Karaoke"
     livekit_url: str = ""
     livekit_api_key: str = ""
     livekit_api_secret: str = ""
@@ -21,6 +22,10 @@ class Settings(BaseSettings):
     @property
     def channel_names(self) -> list[str]:
         return [c.strip() for c in self.channels.split(",") if c.strip()]
+
+    @property
+    def karaoke_names(self) -> list[str]:
+        return [c.strip() for c in self.karaoke_channels.split(",") if c.strip()]
 
 
 @lru_cache

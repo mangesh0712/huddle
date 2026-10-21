@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { ApiError } from '../lib/api'
 import { setMic } from '../lib/voice'
+import { playerRef } from '../lib/playerRef'
 import { useStore } from '../store/useStore'
 import { Icon } from './Icon'
 import { Lyrics } from './RightPanel'
 
 export function Banners({ resetSilence }: { resetSilence: () => void }) {
-  const { conn, mutedByAdmin, voice, stillHere, toast, clearToast } = useStore()
+  const { conn, mutedByAdmin, voice, stillHere, toast, clearToast, needsTap, player } = useStore()
   useEffect(() => {
     if (!toast) return
     const t = setTimeout(clearToast, 4500)
@@ -23,6 +24,11 @@ export function Banners({ resetSilence }: { resetSilence: () => void }) {
         <Bar tone="warn">
           Microphone blocked. Allow it in your browser’s site settings, then
           <button onClick={() => void setMic(true)} className="font-semibold underline">try again</button>.
+        </Bar>
+      )}
+      {needsTap && player.item && (
+        <Bar>Your browser is waiting for a tap before it plays sound.
+          <button onClick={() => playerRef.current?.resumeFromGesture()} className="rounded-lg bg-accent px-3 py-1 font-semibold text-on-accent">Play music</button>
         </Bar>
       )}
       {stillHere && (
@@ -73,7 +79,7 @@ export function SettingsModal() {
               <input type="range" min={0} max={100} value={settings.musicVolume} className="range flex-1" onChange={(e) => setSetting('musicVolume', Number(e.target.value))} />
               <span className="w-9 text-right tabular-nums">{settings.musicVolume}</span>
             </label>
-            <label className="mt-4 flex items-center justify-between text-sm">Lower the music when someone talks
+            <label className="mt-4 flex items-center justify-between text-sm">Lower the music when someone talks (not in karaoke)
               <input type="checkbox" checked={settings.duckOn} onChange={(e) => setSetting('duckOn', e.target.checked)} className="size-5 accent-[var(--accent)]" />
             </label>
             <label className="mt-3 flex items-center gap-3 text-sm">Talking level

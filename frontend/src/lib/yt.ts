@@ -49,6 +49,7 @@ export class SyncedPlayer {
         onReady: () => this.last && this.apply(this.last.p, this.last.offset),
         onStateChange: (e: any) => {
           if (e.data === 0 && this.itemId) this.h.onEnded(this.itemId)
+          if (e.data === YT_PLAYING || e.data === YT_BUFFERING) this.lowQuality()
           if (e.data === YT_PLAYING) this.h.onBlocked(false)
         },
         onError: (e: any) => this.itemId && this.h.onError(this.itemId, e.data),
@@ -61,6 +62,11 @@ export class SyncedPlayer {
   destroy() {
     clearInterval(this.tick)
     this.yt?.destroy?.()
+  }
+
+  /** Nobody watches the video, so ask YouTube for the smallest stream (it may still choose, but usually obeys). */
+  private lowQuality() {
+    this.yt?.setPlaybackQuality?.('tiny')
   }
 
   setVolume(v: number) {

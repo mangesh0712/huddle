@@ -67,7 +67,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return sess
 
     def channel_list():
-        return [{"id": c.id, "name": c.name, "count": len(c.members)} for c in hub.channels.values()]
+        return [{"id": c.id, "name": c.name, "count": len(c.members), "karaoke": c.karaoke} for c in hub.channels.values()]
 
     def voice_token(sess: dict, ch) -> str:
         return livekit_admin.make_token(s, identity=sess["identity"], name=sess["name"], room=ch.id,

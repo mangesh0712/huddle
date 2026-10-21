@@ -31,7 +31,7 @@ class Hub:
         self.channels: dict[str, Channel] = {}
         for name in settings.channel_names:
             slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-            self.channels[slug] = Channel(id=slug, name=name)
+            self.channels[slug] = Channel(id=slug, name=name, karaoke=name in settings.karaoke_names)
         self.conns: dict[str, dict[WebSocket, Member]] = {c: {} for c in self.channels}
         self.http = httpx.AsyncClient(timeout=10)
         self.chat_limit = RateLimiter(5, 3)

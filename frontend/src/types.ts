@@ -47,6 +47,7 @@ export interface ChannelInfo {
   id: string
   name: string
   count: number
+  karaoke: boolean
 }
 
 export interface Palette {

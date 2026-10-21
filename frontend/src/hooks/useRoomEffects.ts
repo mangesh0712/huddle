@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api'
-import { stepDuck } from '../lib/duck'
+import { duckActive, stepDuck } from '../lib/duck'
 import { playerRef } from '../lib/playerRef'
 import { expectedPosition, serverNow } from '../lib/sync'
 import { silenceState } from '../lib/silence'
@@ -66,9 +66,10 @@ export function useDuck() {
     let last = performance.now()
     const t = setInterval(() => {
       const now = performance.now()
-      const { settings, voicePeople } = useStore.getState()
+      const { settings, voicePeople, channels, channel } = useStore.getState()
+      const karaoke = channels.find((c) => c.id === channel)?.karaoke ?? false
       const speaking = voicePeople.some((p) => p.speaking)
-      const target = settings.duckOn && speaking ? settings.duckLevel : 1
+      const target = duckActive(settings.duckOn, karaoke) && speaking ? settings.duckLevel : 1
       gain.current = stepDuck(gain.current, target, now - last, 150, 600)
       last = now
       playerRef.current?.setVolume(settings.musicVolume * gain.current)

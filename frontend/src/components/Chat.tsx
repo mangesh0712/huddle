@@ -54,10 +54,11 @@ export function Chat() {
   const send = useStore((s) => s.send)
   const channelName = useStore((s) => s.channels.find((c) => c.id === s.channel)?.name ?? '')
   const [text, setText] = useState('')
-  const end = useRef<HTMLDivElement>(null)
+  const scroller = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLInputElement>(null)
   useEffect(() => {
-    end.current?.scrollIntoView({ block: 'end' })
+    const el = scroller.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [chat.length])
   const submit = () => {
     if (!text.trim()) return
@@ -66,12 +67,11 @@ export function Chat() {
   }
   return (
     <section className="flex min-h-0 flex-1 flex-col" aria-label={`${channelName} chat`}>
-      <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-5 pb-2">
+      <div ref={scroller} className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-5 pb-2">
         <ul aria-live="polite" aria-relevant="additions" className="mx-auto max-w-3xl py-3">
           {chat.length === 0 && <li className="py-10 text-center text-muted">It’s quiet in {channelName}. Say hi, or type !play to start some music.</li>}
           {chat.map((m, i) => <Row key={m.id} m={m} prev={chat[i - 1]} />)}
         </ul>
-        <div ref={end} />
       </div>
       <form onSubmit={(e) => { e.preventDefault(); submit() }} className="mx-auto w-full max-w-3xl px-5 pb-4">
         <div className="mb-2 flex gap-1.5">

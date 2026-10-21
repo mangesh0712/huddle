@@ -78,3 +78,19 @@ def test_wrong_admin_key_without_invite_is_rejected(client):
 def test_only_admins_receive_the_invite_key(client):
     assert join(client, invite_key="", admin_key="adm").json()["invite_key"] == "inv"
     assert join(client).json().get("invite_key") is None
+
+
+def test_channels_flag_karaoke():
+    s = Settings(invite_key="inv", admin_key="adm", session_secret="s" * 32, livekit_url="wss://x",
+                 livekit_api_key="k", livekit_api_secret="s" * 32, channels="Lounge,Karaoke", karaoke_channels="Karaoke")
+    c = TestClient(create_app(s))
+    j = c.post("/api/join", json={"invite_key": "inv", "identity": "identity-0001", "name": "Ann"}).json()
+    assert {x["id"]: x["karaoke"] for x in j["channels"]} == {"lounge": False, "karaoke": True}
+    tok = j["session"]
+    r = c.get("/api/channels", headers={"Authorization": f"Bearer {tok}"}).json()
+    assert {x["id"]: x["karaoke"] for x in r} == {"lounge": False, "karaoke": True}
+
+
+def test_default_config_includes_karaoke():
+    s = Settings(_env_file=None)
+    assert "Karaoke" in s.channel_names and s.karaoke_names == ["Karaoke"]

@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Sidebar } from './components/Sidebar'
 import { NowPlaying } from './components/NowPlaying'
 import { Chat } from './components/Chat'
-import { RightPanel } from './components/RightPanel'
+import { HiddenPlayer, RightPanel } from './components/RightPanel'
 import { Banners, LyricsOverlay, SettingsModal } from './components/Overlays'
 import { Connecting, Kicked, NameScreen, NoInvite } from './components/Screens'
 import { Icon } from './components/Icon'
@@ -22,17 +22,17 @@ function Room() {
   useEffect(() => {
     if (player.item && !sessionStorage.getItem('huddle:panelSeen')) {
       sessionStorage.setItem('huddle:panelSeen', '1')
-      patch({ rightOpen: true, rightTab: 'queue' })
+      patch({ rightOpen: true })
     }
   }, [player.item, patch])
 
   if (kicked) return <Kicked />
   const tabs = [['voice', 'Voice', 'voice'], ['chat', 'Chat', 'chat'], ['queue', 'Queue', 'queue']] as const
   return (
-    <div className="flex h-dvh flex-col">
+    <div className="flex h-dvh flex-col overflow-hidden">
       <Banners resetSilence={resetSilence} />
-      <div className="relative min-h-0 flex-1 md:grid md:grid-cols-[260px_1fr_auto]">
-        <div className={`h-full ${mobileTab === 'voice' ? 'block' : 'hidden'} md:block`}><Sidebar /></div>
+      <div className="relative min-h-0 flex-1 md:grid md:grid-cols-[260px_minmax(0,1fr)_auto] md:grid-rows-[minmax(0,1fr)]">
+        <div className={`h-full min-h-0 ${mobileTab === 'voice' ? 'block' : 'hidden'} md:block`}><Sidebar /></div>
 
         <main className={`room-glow min-w-0 flex-col ${mobileTab === 'chat' ? 'flex' : 'hidden'} h-full md:flex`}>
           <header className="hidden border-b border-line/70 md:block"><NowPlaying /></header>
@@ -58,6 +58,7 @@ function Room() {
           </button>
         ))}
       </nav>
+      <HiddenPlayer />
       <LyricsOverlay />
       <SettingsModal />
     </div>

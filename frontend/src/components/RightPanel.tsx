@@ -8,11 +8,9 @@ import type { Video } from '../types'
 import { usePosition } from '../hooks/useRoomEffects'
 import { Icon } from './Icon'
 
-/** Mounted once for the life of the app so the music never restarts. */
-function PlayerCard() {
+/** Audio-only experience: the YouTube embed stays mounted (so the music never restarts) but off-screen, at the lowest quality. */
+export function HiddenPlayer() {
   const host = useRef<HTMLDivElement>(null)
-  const needsTap = useStore((s) => s.needsTap)
-  const item = useStore((s) => s.player.item)
   useEffect(() => {
     const el = document.createElement('div')
     host.current!.appendChild(el)
@@ -33,18 +31,7 @@ function PlayerCard() {
       playerRef.current = null
     }
   }, [])
-  return (
-    <div className="relative h-[200px] w-full overflow-hidden rounded-2xl bg-black">
-      <div ref={host} className="absolute inset-0 [&>iframe]:size-full" />
-      {!item && <div className="absolute inset-0 grid place-items-center bg-raised text-sm text-muted">The player appears here when a song starts.</div>}
-      {needsTap && item && (
-        <button onClick={() => playerRef.current?.resumeFromGesture()}
-          className="absolute inset-0 grid place-items-center bg-black/70 text-base font-semibold">
-          Tap to hear the music
-        </button>
-      )}
-    </div>
-  )
+  return <div ref={host} aria-hidden="true" className="pointer-events-none fixed top-0 -left-[1000px] h-[200px] w-[200px] [&>iframe]:size-full" />
 }
 
 export function Lyrics({ fullscreen = false }: { fullscreen?: boolean }) {
@@ -58,8 +45,11 @@ export function Lyrics({ fullscreen = false }: { fullscreen?: boolean }) {
   const lines = entry && entry !== 'loading' ? entry.lines : []
   const idx = currentLineIndex(lines, pos, nudge)
   const active = useRef<HTMLParagraphElement>(null)
+  const scroller = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    active.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    const el = scroller.current
+    const line = active.current
+    if (el && line) el.scrollTo({ top: line.offsetTop - el.clientHeight / 2 + line.clientHeight / 2, behavior: 'smooth' })
   }, [idx, it?.video_id])
   const bump = (d: number) => it && setSetting('nudges', { ...settings.nudges, [it.video_id]: nudge + d })
   const search = async (e: React.FormEvent) => {
@@ -72,7 +62,7 @@ export function Lyrics({ fullscreen = false }: { fullscreen?: boolean }) {
   }
   return (
     <div className={`flex min-h-0 flex-1 flex-col ${fullscreen ? 'h-full' : ''}`}>
-      <div className="scroll-quiet min-h-0 flex-1 overflow-y-auto px-5 py-[30%] text-center">
+      <div ref={scroller} className="relative scroll-quiet min-h-0 flex-1 overflow-y-auto px-5 py-[30%] text-center">
         {!it && <p className="text-muted">Lyrics show up here once a song is playing.</p>}
         {it && entry === 'loading' && <p role="status" className="text-muted">Finding lyrics…</p>}
         {it && entry && entry !== 'loading' && !entry.found && <p className="text-muted">No synced lyrics found for this track.</p>}
@@ -185,17 +175,11 @@ function Queue() {
 }
 
 export function RightPanel() {
-  const { rightTab, patch, player } = useStore()
-  const it = player.item
+  const { rightTab, patch } = useStore()
   const tabs = [['queue', 'Queue'], ['lyrics', 'Lyrics']] as const
   return (
-    <div className="flex h-full w-full min-w-0 flex-col bg-surface md:w-[340px]">
-      <div className="p-4 pb-3">
-        <PlayerCard />
-        {it && <p className="mt-3 truncate text-sm font-semibold">{it.title}</p>}
-        {it && <p className="truncate text-xs text-muted">{it.channel_title}</p>}
-      </div>
-      <div role="tablist" className="mx-4 mb-2 flex gap-1 rounded-xl bg-base p-1">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col bg-surface md:w-[340px]">
+      <div role="tablist" className="mx-4 mt-4 mb-2 flex gap-1 rounded-xl bg-base p-1">
         {tabs.map(([id, label]) => (
           <button key={id} role="tab" aria-selected={rightTab === id} onClick={() => patch({ rightTab: id })}
             className={`flex-1 rounded-lg py-1.5 text-sm font-medium transition-colors ${rightTab === id ? 'bg-raised text-ink' : 'text-muted hover:text-ink'}`}>{label}</button>

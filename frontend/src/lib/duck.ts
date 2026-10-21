@@ -8,3 +8,6 @@ export function stepDuck(current: number, target: number, dtMs: number, attackMs
   if (target < current) return Math.max(target, current - dtMs / attackMs)
   return Math.min(target, current + dtMs / releaseMs)
 }
+
+/** Ducking applies only when the user wants it and the channel isn't karaoke (singing over the track is the point). */
+export const duckActive = (userEnabled: boolean, karaoke: boolean) => userEnabled && !karaoke

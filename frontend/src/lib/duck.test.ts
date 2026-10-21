@@ -26,3 +26,13 @@ describe('auto-duck', () => {
     expect(stepDuck(0.9, 1, 1000, 150, 600)).toBe(1)
   })
 })
+
+describe('karaoke channels', () => {
+  it('never duck in karaoke, whatever the setting', async () => {
+    const { duckActive } = await import('./duck')
+    expect(duckActive(true, true)).toBe(false)
+    expect(duckActive(false, true)).toBe(false)
+    expect(duckActive(true, false)).toBe(true)
+    expect(duckActive(false, false)).toBe(false)
+  })
+})
