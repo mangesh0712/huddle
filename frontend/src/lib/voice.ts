@@ -1,5 +1,6 @@
 import { ConnectionState, LocalAudioTrack, Room, RoomEvent, Track, type Participant, type RemoteTrack } from 'livekit-client'
 import { api } from './api'
+import { effectivePreset } from './autotune'
 import { createFxProcessor } from './fx'
 import { useStore, type VoicePerson } from '../store/useStore'
 
@@ -105,7 +106,7 @@ export async function setMic(on: boolean) {
   try {
     await room.localParticipant.setMicrophoneEnabled(on)
     useStore.setState({ micOn: on, voice: st().voice === 'denied' ? 'on' : st().voice })
-    if (on) await applyFx(st().settings.fx)
+    if (on) await refreshFx()
   } catch (e) {
     const denied = e instanceof Error && /permission|denied|notallowed/i.test(e.name + e.message)
     useStore.setState({ micOn: false, ...(denied ? { voice: 'denied' as const } : {}) })
@@ -123,21 +124,33 @@ export function setFriendVolume(identity: string, v: number) {
   applyVolumes()
 }
 
+/** Applies the voice effect that should be active right now (auto-tune in karaoke unless another effect is chosen). */
+export async function refreshFx() {
+  const { settings, channels, channel } = st()
+  const karaoke = channels.find((c) => c.id === channel)?.karaoke ?? false
+  await applyFx(effectivePreset(settings.fx, karaoke, settings.autotune))
+}
+
 export async function applyFx(p: import('../store/useStore').FxPreset) {
   if (!room) return
   const pub = room.localParticipant.getTrackPublication(Track.Source.Microphone)
   const track = pub?.audioTrack as LocalAudioTrack | undefined
   if (!track) return
-  if (p === 'off') {
-    if (fxProc) {
-      await track.stopProcessor()
-      fxProc = null
+  try {
+    if (p === 'off') {
+      if (fxProc) {
+        await track.stopProcessor()
+        fxProc = null
+      }
+      return
     }
-    return
+    if (fxProc) return fxProc.setPreset(p)
+    fxProc = createFxProcessor(p)
+    await track.setProcessor(fxProc as never)
+  } catch (e) {
+    fxProc = null
+    console.warn('Voice effect could not start; sending the plain voice.', e)
   }
-  if (fxProc) return fxProc.setPreset(p)
-  fxProc = createFxProcessor(p)
-  await track.setProcessor(fxProc as never)
 }
 
 export const inVoice = () => room !== null

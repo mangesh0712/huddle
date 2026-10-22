@@ -90,7 +90,10 @@ export function SettingsModal() {
 
           <section>
             <h3 className="mb-2 text-sm font-medium text-muted">Voice</h3>
-            <label className="flex items-center justify-between text-sm">Push to talk
+            <label className="flex items-center justify-between text-sm">Auto-tune my voice in Karaoke
+              <input type="checkbox" checked={settings.autotune} onChange={(e) => setSetting('autotune', e.target.checked)} className="size-5 accent-[var(--accent)]" />
+            </label>
+            <label className="mt-4 flex items-center justify-between text-sm">Push to talk
               <input type="checkbox" checked={settings.pttOn} onChange={(e) => setSetting('pttOn', e.target.checked)} className="size-5 accent-[var(--accent)]" />
             </label>
             {settings.pttOn && (

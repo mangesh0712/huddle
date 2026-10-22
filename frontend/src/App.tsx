@@ -6,7 +6,7 @@ import { HiddenPlayer, RightPanel } from './components/RightPanel'
 import { Banners, LyricsOverlay, SettingsModal } from './components/Overlays'
 import { Connecting, Kicked, NameScreen, NoInvite } from './components/Screens'
 import { Icon } from './components/Icon'
-import { useAccent, useDuck, useLyricsLoader, usePushToTalk, useSilenceWatchdog } from './hooks/useRoomEffects'
+import { useAccent, useDuck, useLyricsLoader, usePushToTalk, useSilenceWatchdog, useVoiceFx } from './hooks/useRoomEffects'
 import { useStore } from './store/useStore'
 
 function Room() {
@@ -14,6 +14,7 @@ function Room() {
   useDuck()
   useLyricsLoader()
   usePushToTalk()
+  useVoiceFx()
   const resetSilence = useSilenceWatchdog()
   const { rightOpen, mobileTab, patch, kicked, player, channels, channel } = useStore()
   const channelName = channels.find((c) => c.id === channel)?.name ?? ''

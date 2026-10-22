@@ -6,7 +6,7 @@ import { emptyRoom, reduceServer, type RoomState } from './room'
 import type { ChannelInfo, ClientMsg, Palette } from '../types'
 import type { LyricLine } from '../lib/lyrics'
 
-export type FxPreset = 'off' | 'deep' | 'chipmunk' | 'robot' | 'echo' | 'radio'
+export type FxPreset = 'off' | 'autotune' | 'deep' | 'chipmunk' | 'robot' | 'echo' | 'radio'
 export type AuthStatus = 'boot' | 'noinvite' | 'needname' | 'joining' | 'ready' | 'error' | 'kicked'
 export type VoiceStatus = 'off' | 'connecting' | 'on' | 'denied' | 'error'
 
@@ -26,6 +26,7 @@ export interface Settings {
   pttOn: boolean
   pttCode: string
   fx: FxPreset
+  autotune: boolean
   nudges: Record<string, number>
   lyricsOn: boolean
 }
@@ -34,7 +35,7 @@ export const DEFAULT_ACCENT: Palette = { accent: '#7c5cff', accent_soft: 'rgba(1
 
 const defaultSettings: Settings = {
   musicVolume: 70, duckOn: true, duckLevel: 0.35, friendVolumes: {}, pttOn: false, pttCode: 'KeyV',
-  fx: 'off', nudges: {}, lyricsOn: true,
+  fx: 'off', autotune: true, nudges: {}, lyricsOn: true,
 }
 
 interface AppState extends RoomState {

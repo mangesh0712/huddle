@@ -4,7 +4,7 @@ import { duckActive, stepDuck } from '../lib/duck'
 import { playerRef } from '../lib/playerRef'
 import { expectedPosition, serverNow } from '../lib/sync'
 import { silenceState } from '../lib/silence'
-import { inVoice, leaveVoice, setMic } from '../lib/voice'
+import { inVoice, leaveVoice, refreshFx, setMic } from '../lib/voice'
 import { DEFAULT_ACCENT, useStore } from '../store/useStore'
 
 const root = document.documentElement
@@ -131,4 +131,15 @@ export function useSilenceWatchdog() {
     last.current = Date.now()
     useStore.setState({ stillHere: false })
   }
+}
+
+/** Keeps the mic effect in step with the channel, the effect menu and the auto-tune setting. */
+export function useVoiceFx() {
+  const fx = useStore((s) => s.settings.fx)
+  const autotune = useStore((s) => s.settings.autotune)
+  const karaoke = useStore((s) => s.channels.find((c) => c.id === s.channel)?.karaoke ?? false)
+  const micOn = useStore((s) => s.micOn)
+  useEffect(() => {
+    if (micOn) void refreshFx()
+  }, [fx, autotune, karaoke, micOn])
 }

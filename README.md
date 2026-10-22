@@ -42,7 +42,7 @@ Links to share: invite `https://<host>/join/<INVITE_KEY>`, admin `https://<host>
 
 ## Karaoke
 
-Channels listed in `KARAOKE_CHANNELS` (default `Karaoke`) never lower the music while people sing, and open the lyrics panel automatically. Add the name to `CHANNELS` too.
+Channels listed in `KARAOKE_CHANNELS` (default `Karaoke`) never lower the music while people sing, and open the lyrics panel automatically. Auto-tune is on by default for anyone speaking in voice there (it snaps your pitch to the nearest note); pick another effect or "Normal voice" in the effects menu, or untick it in Settings, to turn it off. Add the name to `CHANNELS` too.
 
 ## Known limits
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../lib/api'
 import { joinVoice, leaveVoice, setDeafened, setFriendVolume, setMic } from '../lib/voice'
-import { applyFx } from '../lib/voice'
+import { effectivePreset } from '../lib/autotune'
 import { useStore, type FxPreset } from '../store/useStore'
 import type { Member } from '../types'
 import { Avatar } from './Avatar'
@@ -73,13 +73,16 @@ function Person({ m }: { m: Member }) {
 }
 
 const FX: { id: FxPreset; label: string }[] = [
-  { id: 'off', label: 'Normal voice' }, { id: 'deep', label: 'Deep' }, { id: 'chipmunk', label: 'Chipmunk' },
+  { id: 'off', label: 'Normal voice' }, { id: 'autotune', label: 'Auto-tune' }, { id: 'deep', label: 'Deep' }, { id: 'chipmunk', label: 'Chipmunk' },
   { id: 'robot', label: 'Robot' }, { id: 'echo', label: 'Echo' }, { id: 'radio', label: 'Radio' },
 ]
 
 function FxMenu() {
-  const fx = useStore((s) => s.settings.fx)
+  const chosen = useStore((s) => s.settings.fx)
+  const autotune = useStore((s) => s.settings.autotune)
+  const karaoke = useStore((s) => s.channels.find((c) => c.id === s.channel)?.karaoke ?? false)
   const setSetting = useStore((s) => s.setSetting)
+  const fx = effectivePreset(chosen, karaoke, autotune)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -95,12 +98,12 @@ function FxMenu() {
         <div role="menu" className="absolute bottom-12 left-0 z-30 w-52 rounded-2xl bg-raised p-1.5 shadow-xl shadow-black/50">
           {FX.map((f) => (
             <button key={f.id} role="menuitemradio" aria-checked={fx === f.id}
-              onClick={() => { setSetting('fx', f.id); void applyFx(f.id) }}
+              onClick={() => { setSetting('fx', f.id); if (f.id === 'off' && karaoke) setSetting('autotune', false) }}
               className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-line ${fx === f.id ? 'text-accent' : ''}`}>
               {f.label}{fx === f.id && <span aria-hidden="true">●</span>}
             </button>
           ))}
-          <p className="px-3 pt-2 pb-1 text-xs text-muted">Use headphones with effects to avoid echo.</p>
+          <p className="px-3 pt-2 pb-1 text-xs text-muted">Use headphones with effects to avoid echo. In Karaoke, auto-tune is on unless you pick Normal voice.</p>
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import type { FxPreset } from '../store/useStore'
+import { AutoTuner } from './autotune'
 
 type ToneNS = typeof import('tone')
 
@@ -14,6 +15,8 @@ function buildChain(T: ToneNS, p: FxPreset): Chain {
     return { head: nodes[0], tail: nodes[nodes.length - 1], nodes }
   }
   switch (p) {
+    case 'autotune':
+      return mk([new T.PitchShift({ pitch: 0, windowSize: 0.05 })])
     case 'deep':
       return mk([new T.PitchShift({ pitch: -5, windowSize: 0.1 })])
     case 'chipmunk':
@@ -41,9 +44,19 @@ export function createFxProcessor(initial: FxPreset) {
   let dest: MediaStreamAudioDestinationNode | null = null
   let chain: Chain = { head: null, tail: null, nodes: [] }
   let preset = initial
+  let analyser: AnalyserNode | null = null
+  let tuner: AutoTuner | null = null
+
+  const stopTuner = () => {
+    tuner?.stop()
+    tuner = null
+    analyser?.disconnect()
+    analyser = null
+  }
 
   const wire = () => {
     if (!T || !source || !dest) return
+    stopTuner()
     source.disconnect()
     chain.nodes.forEach((n) => n.dispose())
     chain = buildChain(T, preset)
@@ -51,6 +64,14 @@ export function createFxProcessor(initial: FxPreset) {
       T.connect(source, chain.head as any)
       ;(chain.tail as any).connect(dest)
     } else source.connect(dest)
+    if (preset === 'autotune' && ctx) {
+      analyser = ctx.createAnalyser()
+      analyser.fftSize = 2048
+      source.connect(analyser)
+      const shifter = chain.nodes[0] as unknown as { pitch: number }
+      tuner = new AutoTuner(analyser, (st) => (shifter.pitch = st), ctx.sampleRate)
+      tuner.start()
+    }
   }
 
   const processor = {
@@ -71,6 +92,7 @@ export function createFxProcessor(initial: FxPreset) {
       await processor.init(opts)
     },
     async destroy() {
+      stopTuner()
       chain.nodes.forEach((n) => n.dispose())
       chain = { head: null, tail: null, nodes: [] }
       source?.disconnect()
