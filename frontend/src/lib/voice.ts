@@ -1,4 +1,4 @@
-import { ConnectionState, LocalAudioTrack, Room, RoomEvent, Track, type Participant } from 'livekit-client'
+import { ConnectionState, LocalAudioTrack, Room, RoomEvent, Track, type Participant, type RemoteTrack } from 'livekit-client'
 import { api } from './api'
 import { createFxProcessor } from './fx'
 import { useStore, type VoicePerson } from '../store/useStore'
@@ -26,6 +26,19 @@ function sync() {
   if (lp.permissions && lp.permissions.canPublish === false && st().micOn) useStore.setState({ micOn: false })
 }
 
+/** LiveKit never plays remote audio by itself: each subscribed track has to be attached to an element. */
+function playRemote(track: RemoteTrack) {
+  if (track.kind !== Track.Kind.Audio) return
+  const el = track.attach()
+  el.setAttribute('data-huddle-voice', '')
+  el.style.display = 'none'
+  document.body.appendChild(el)
+}
+
+function stopRemote(track: RemoteTrack) {
+  if (track.kind === Track.Kind.Audio) track.detach().forEach((el) => el.remove())
+}
+
 function applyVolumes() {
   if (!room) return
   const { deafened, settings } = st()
@@ -48,7 +61,14 @@ export async function joinVoice(channel: string) {
     room
       .on(RoomEvent.ParticipantConnected, refresh)
       .on(RoomEvent.ParticipantDisconnected, refresh)
-      .on(RoomEvent.TrackSubscribed, refresh)
+      .on(RoomEvent.TrackSubscribed, (track) => {
+        playRemote(track)
+        refresh()
+      })
+      .on(RoomEvent.TrackUnsubscribed, (track) => {
+        stopRemote(track)
+        refresh()
+      })
       .on(RoomEvent.ActiveSpeakersChanged, sync)
       .on(RoomEvent.TrackMuted, sync)
       .on(RoomEvent.TrackUnmuted, sync)
